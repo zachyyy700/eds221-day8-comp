@@ -81,3 +81,83 @@ ggplot(lizard_counts, aes(n, fct_reorder(common_name, n))) +
   geom_col()
 ```
 
+## Advanced customization
+```{r}
+ggplot(lizards, aes(total_length, weight)) +
+  geom_point() + 
+  scale_x_continuous(breaks = c(0, 250, 500), 
+                     limits = c(0, 500)) + 
+  scale_y_continuous(breaks = seq(from = 0, to = 70, by = 10), 
+                     limits = c(0, 70)) +
+  scale_x_log10()
+```
+
+```{r}
+# counting lizards caught per day
+lizard_daily <- lizards |> 
+  mutate(date = lubridate::mdy(date)) |> 
+  count(date)
+
+# plot
+ggplot(lizard_daily, aes(x = date, y = n)) + 
+  geom_line() +
+  scale_x_date(breaks = scales::breaks_width("2 years"),
+               labels = scales::label_date("'%y"))
+```
+
+### Modifying aes with scale_()
+```{r}
+# color gradient with 2 colors
+ggplot(lizards, aes(total_length, weight)) + 
+  geom_point(aes(color = weight)) +
+  scale_color_gradient(low = "magenta", high = "black")
+# color gradient with 2+ colors
+ggplot(lizards, aes(total_length, weight)) + 
+  geom_point(aes(color = weight)) +
+  scale_color_gradientn(colors = c("orange", "yellow", "black"))
+# color gradient of bins
+ggplot(lizards, aes(total_length, weight)) + 
+  geom_point(aes(color = weight)) +
+scale_color_steps(low = "red", high = "purple", breaks = seq(0, 80, by = 5)) 
+
+```
+
+### Discrete variables
+```{r}
+ggplot(lizards, aes(common_name, total_length)) + 
+  geom_boxplot(aes(fill = common_name),
+               show.legend = FALSE) + 
+  coord_flip()
+```
+
+```{r}
+lizards_mean <- lizards |> 
+  mutate(common_name = fct_reorder(common_name, total_length, .fun = mean))
+ggplot(lizards, aes(common_name, total_length)) + 
+  geom_boxplot(aes(fill = common_name), 
+               show.legend = FALSE) + 
+  coord_flip() +
+  scale_fill_paletteer_d(palette = "ggsci::default_gsea") +
+  theme_light()
+```
+
+### Gridlines/Panel Colors
+
+### Patchwork
+```{r}
+p1 <- ggplot(lizards, aes(common_name, total_length)) + 
+  geom_boxplot(aes(fill = common_name), 
+               show.legend = FALSE) + 
+  coord_flip() +
+  scale_fill_paletteer_d(palette = "ggsci::default_gsea") +
+  theme_light()
+
+p2 <- ggplot(lizards, aes(total_length, weight)) + 
+  geom_point(aes(color = weight)) +
+scale_color_steps(low = "red", high = "purple", breaks = seq(0, 80, by = 5))
+
+(p1 | p2) & theme_light()
+p1 / p2
+
+```
+
