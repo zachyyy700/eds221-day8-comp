@@ -1,0 +1,83 @@
+---
+title: "data_viz_intro"
+author: "zachyloo"
+format: html
+editor: visual
+---
+
+```{r}
+pacman::p_load("tidyverse", "here", "janitor", "patchwork", "ggrepel", "gghighlight", "paletteer", "ggExtra", "ggbeeswarm", "gapminder", "sf")
+```
+
+# ggpplot basics
+```{r}
+lizards <- read_csv(here::here("data_tidy", "lizards.csv"))
+```
+
+## Essentials
+1. data 2. aesthetics 3. geom
+```{r}
+# 3 ways
+# firstly, aes in ggplot function
+ggplot(data = lizards, aes(x = total_length, y = weight)) + 
+  geom_point()
+# second, aes in geom function
+ggplot(data = lizards) +
+  geom_point(aes(x = total_length, y = weight))
+# third, everything in geom function
+ggplot() + 
+  geom_point(data = lizards, aes(x = total_length, y = weight))
+```
+
+## Swap geoms
+```{r}
+ggplot(data = lizards, aes(x = total_length, y = weight)) + 
+  geom_line()
+# histograms need only one axis
+ggplot(lizards, aes(x = total_length)) +
+  geom_histogram()
+```
+
+geom_jitter() usually best with one categorical and one continuous var
+```{r}
+ggplot(lizards, aes(x = weight, y = common_name)) +
+  geom_jitter()
+```
+
+## Aesthetic Mapping
+### Based on constant value 
+Don't even need to use `aes()` function
+```{r}
+ggplot(lizards, aes(x = weight)) +
+  geom_histogram(color = "magenta",
+                 fill = "purple",
+                 alpha = 0.3,
+                 linetype = "dashed")
+```
+
+### Based on variables
+```{r}
+ggplot(lizards, aes(total_length, weight)) +
+  geom_point(aes(color = common_name), alpha = 0.5)
+```
+
+## Themes/Axis Labels
+```{r}
+ggplot(lizards, aes(weight, site)) +
+  geom_jitter(aes(color = common_name)) +
+  labs(x = "Weight (g)",
+       y = "Study Site", 
+       title = "Lizard Weights Across Sites at Jornada",
+       color = "Species") +
+  theme_light()
+```
+
+## Reorder data
+```{r}
+lizard_counts <- lizards |> 
+  count(common_name)
+
+ggplot(lizard_counts, aes(n, fct_reorder(common_name, n))) +
+  geom_col()
+```
+
